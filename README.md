@@ -5,7 +5,7 @@ Eye diagram visualization using D3.js
 
 Eye diagram visualization using the [D3.js](http://d3js.org) javascript library.
 
-See http://www.tmpl.fi/D3js_eye_diagram/ for an example diagram.
+See http://www.tmpl.fi/d3js_eye_diagram/ for an example diagram.
 
 See [Probabilistic retrieval and visualization of biologically relevant microarray experiments](http://bioinformatics.oxfordjournals.org/content/25/12/i145.full) by Caldas et al. for the original visualization technique. Their code is available at https://github.com/ouzor/eyediagram.
 
