@@ -3,19 +3,19 @@ Eye diagram visualization using D3.js
 
 *Note: This is "under-development" (to the extent I have time). While usable, the experience might not be very smooth with regard to configuration, documentation, etc.*
 
-Eye diagram visualization using the [http://d3js.org][D3.js] javascript library.
+Eye diagram visualization using the [D3.js](http://d3js.org) javascript library.
 
-See [http://www.tmpl.fi/D3js_eye_diagram/] for an example diagram.
+See http://www.tmpl.fi/D3js_eye_diagram/ for an example diagram.
 
-See [http://bioinformatics.oxfordjournals.org/content/25/12/i145.full][Probabilistic retrieval and visualization of biologically relevant microarray experiments] by Caldas et al. for the original visualization technique. Their code is available at [https://github.com/ouzor/eyediagram].
+See [Probabilistic retrieval and visualization of biologically relevant microarray experiments](http://bioinformatics.oxfordjournals.org/content/25/12/i145.full) by Caldas et al. for the original visualization technique. Their code is available at https://github.com/ouzor/eyediagram.
 
-See `eye_diagram_data.R` for an example how to generate eye diagram datafile from [https://cran.r-project.org/web/packages/CCAGFA/index.html][CCAGFA] objects.
+See `eye_diagram_data.R` for an example how to generate eye diagram datafile from [CCAGFA](https://cran.r-project.org/web/packages/CCAGFA/index.html) objects.
 
 
 Usage on a web page
 -------------------
 
-(1) In the head of the html page, include [http://d3js.org][D3.js], the diagram code (which exports a single javascript function `draw_diagram`), and some css (here `#dg` is the id of the svg element of the visualization).
+(1) In the head of the html page, include [D3.js](http://d3js.org), the diagram code (which exports a single javascript function `draw_diagram`), and some css (here `#dg` is the id of the svg element of the visualization).
 
 ~~~~~ html
 <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.6/d3.min.js" charset="utf-8"></script>
@@ -142,13 +142,13 @@ The latter two (`json.Y_left_to_Z` and `json.Y_right_to_Z` above) describe the e
 
 See `data.json` for an example file.
 
-See `gfa.R` for an example of generating the json-file in [https://www.r-project.org][R] code.
+See `eye_diagram_data.R` for an example of generating the json-file in [R](https://www.r-project.org) code.
 
 
 Rendering to svg-file
 ---------------------
 
-Rendering directly to an svg-file is useful, for example, for post-processing (adding further annotations etc.) or saving to pdf using CairoSVG (see below) or [https://inkscape.org][Inkscape].
+Rendering directly to an svg-file is useful, for example, for post-processing (adding further annotations etc.) or saving to pdf using CairoSVG (see below) or [Inkscape](https://inkscape.org).
 
 To export the svg diagram (if data filename is omitted, data.json is used by default; if configuration file is omitted, the default configuration in the script is used; currently if given, the configuration file needs to be complete):
 ~~~~~
@@ -186,8 +186,8 @@ Contact
 -------
 
  * E-mail: tomi.peltola@tmpl.fi
- * WWW: [http://www.tmpl.fi]
- * GitHub: [https://github.com/to-mi/]
+ * WWW: http://www.tmpl.fi
+ * GitHub: https://github.com/to-mi/
 
 
 License
