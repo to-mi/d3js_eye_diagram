@@ -111,5 +111,129 @@ eye_diagram_data <- function(fit, threshold, g1, g2, file=NULL) {
 
   if (!is.null(file)) writeLines(c(out), file)
 
-  out
+  invisible(out)
+}
+
+# Makes eye diagram json datafile from a CCAGFA fit object, places samples on the left and variables on the right:
+# fit: CCAGFA object.
+# threshold: prunes edges with smaller (absolute) weight than the set threshold.
+# filename: output to file.
+# TODO: Refactor eye_diagram_data-functions.
+eye_diagram_data2 <- function(fit, thresholdW, thresholdZ, file=NULL, Wmask=NULL, Zmask=NULL, reorder=T) {
+  vargroups <- lapply(fit$W, rownames)
+  k <- fit$K
+  nv <- length(vargroups)
+  n <- length(unlist(vargroups))
+  ns <- nrow(fit$Z)
+
+  # collect all views into single W but retain group information
+  W <- matrix(0, ncol=n, nrow=k)
+  groups <- rep(0, n)
+  j <- 1
+  for (i in 1:nv) {
+    d <- dim(fit$W[[i]])[1]
+    W[,j:(j+d-1)] <- t(fit$W[[i]])
+    groups[j:(j+d-1)] <- i
+    j <- j + d
+  }
+  colnames(W) <- unlist(vargroups)
+
+  if (!is.null(Wmask)) W <- Wmask * W
+  if (!is.null(Zmask)) Z <- Zmask * Z
+
+  Z <- t(fit$Z)
+
+  # prune latent space
+  inds <- apply(abs(W) >= thresholdW, 1, any) | apply(abs(Z) >= thresholdZ, 1, any)
+  W <- W[inds,]
+  Z <- Z[inds,]
+  k <- dim(W)[1]
+
+  # prune connections
+  W[abs(W) < thresholdW] <- 0
+  Z[abs(Z) < thresholdZ] <- 0
+
+  if (reorder) {
+    # TODO: This gives decent results, but sometimes fails to reorder some simple cases.
+    library(igraph)
+    am <- matrix(0, ns + k + n, ns + k + n)
+    am[1:ns, (ns+1):(ns+k)] <- t(abs(Z) > 0)
+    am[(ns+1):(ns + k), (ns+k+1):(ns+k+n)] <- abs(W) > 0
+    am <- am + t(am)
+    g <- graph_from_adjacency_matrix(am, mode="undirected")
+    g <- layout_with_sugiyama(g, layers=c(rep(1, ns), rep(2, k), rep(3, n)), maxiter=1000)
+    zo <- order(g$layout[1:ns,1])
+    co <- order(g$layout[(ns+1):(ns+k),1])
+    wo <- order(g$layout[(ns+k+1):(ns+k+n),1])
+    W <- W[co, wo]
+    Z <- Z[co, zo]
+  }
+
+  # helper functions for edge opacity and color
+  maxW <- max(abs(W))
+  opaW <- function(w) {
+    (abs(w)-thresholdW)/(maxW-thresholdW)*0.8+0.2
+  }
+  maxZ <- max(abs(Z))
+  opaZ <- function(z) {
+    (abs(z)-thresholdZ)/(maxZ-thresholdZ)*0.8+0.2
+  }
+  colo <- function(w) {
+    if (w > 0) "#990000"
+    else "#000099"
+  }
+
+  # do side nodes and edges
+  cmap <- brewer.pal(12,"Set3")
+  varnamesW <- colnames(W)
+
+  edges <- list(c(), c())
+  Ys <- list(c(), c())
+
+  ii <- c(1, 1)
+  for (i in 1:dim(W)[2]) {
+    gii <- groups[i]
+    gi <- 2
+
+    for (j in 1:k) {
+      if (abs(W[j, i]) >= thresholdW) {
+        edges[[gi]] <- c(edges[[gi]], sprintf('{"Y": %d, "Z": %d, "w": 1, "o": %.2f, "c": "%s"}', ii[gi]-1, j-1, opaW(W[j, i]), colo(W[j, i])))
+      }
+    }
+
+    Ys[[gi]] <- c(Ys[[gi]], sprintf('{"label": "%s", "c": "%s"}', varnamesW[i], cmap[((gii-1) %% 12)+1]))
+
+    ii[gi] <- ii[gi] + 1
+  }
+
+  varnamesZ <- colnames(Z)
+  for (i in 1:dim(Z)[2]) {
+    gi <- 1
+
+    for (j in 1:k) {
+      if (abs(Z[j, i]) >= thresholdZ) {
+        edges[[gi]] <- c(edges[[gi]], sprintf('{"Y": %d, "Z": %d, "w": 1, "o": %.2f, "c": "%s"}', ii[gi]-1, j-1, opaZ(Z[j, i]), colo(Z[j, i])))
+      }
+    }
+
+    Ys[[gi]] <- c(Ys[[gi]], sprintf('{"label": "%s", "c": "%s"}', varnamesZ[i], cmap[((i-1) %% 12)+1]))
+
+    ii[gi] <- ii[gi] + 1
+  }
+
+  # do middle nodes
+  varnames <- paste("Z", 1:k, sep="")
+
+  Z <- c()
+
+  for (i in 1:length(varnames)) {
+    Z <- c(Z, sprintf('{"label": "%s", "c": "%s"}', varnames[i], "#ffffff"))
+  }
+
+  # write json to a string and then file
+  out <- sprintf('{ "Z": [%s],\n  "Y_left": [%s],\n  "Y_right": [%s],\n  "Y_left_to_Z": [%s],\n  "Y_right_to_Z": [%s] }\n', paste(Z,collapse=','), paste(Ys[[1]],collapse=','), paste(Ys[[2]],collapse=','), paste(edges[[1]],collapse=','),paste(edges[[2]],collapse=','))
+
+  if (!is.null(file)) writeLines(c(out), file)
+
+  invisible(out)
 }
